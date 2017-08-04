@@ -7,6 +7,8 @@ from forms.register import RegisterForm
 import json
 import requests
 from functools import wraps
+import os
+import logging
 
 app = Flask(__name__)
 
@@ -24,8 +26,9 @@ def is_logged_in(f):
 @app.route('/')
 def index():
     headers = {'content-type': 'application/json'}
-    url = 'http://127.0.0.1:5001/'
+    url = 'http://catalogue:5001/'
     response = requests.post(url, headers=headers)
+    logging.warning('RESPONSE %s', response.status_code)
     if response.status_code is 200:
         products = json.loads(response.content)['productDetails']
         return render_template('index.html', products=products)
@@ -42,7 +45,7 @@ def register():
         data = {"email": form.email.data, "username": form.username.data, "password": sha256_crypt.encrypt(str(form.password.data))}
         data = json.dumps(data)
         headers = {'content-type': 'application/json'}
-        url = 'http://127.0.0.1:5002/register'
+        url = 'http://user:5002/register'
         response = requests.post(url, data=data, headers=headers)
         if response.status_code is 200:
             flash('You are now registered and can login', 'success')
@@ -58,7 +61,7 @@ def login():
         data = {"username": username, "password_candidate": password_candidate}
         data = json.dumps(data)
         headers = {'content-type': 'application/json'}
-        url = 'http://127.0.0.1:5002/login'
+        url = 'http://user:5002/login'
         response = requests.post(url, data=data, headers=headers)
         if response.status_code is 200:
             content = json.loads(response.content)
@@ -85,7 +88,7 @@ def addToCart(id):
     data = {"productId": productId, "userId": session['userId']}
     data = json.dumps(data)
     headers = {'content-type': 'application/json'}
-    url = 'http://127.0.0.1:5003/add-to-cart'
+    url = 'http://cart:5003/add-to-cart'
     response = requests.post(url, data=data, headers=headers)
     print(response.status_code)
     if response.status_code is 200:
@@ -97,7 +100,7 @@ def addToCart(id):
 @is_logged_in
 def cart():
     headers = {'content-type': 'application/json'}
-    url = 'http://127.0.0.1:5003/cart'
+    url = 'http://cart:5003/cart'
     data = {"userId": session['userId']}
     data = json.dumps(data)
     response = requests.post(url, data=data, headers=headers)
@@ -112,7 +115,7 @@ def cart():
 @is_logged_in
 def placeOrder(cartId, totalPrice):
     headers = {'content-type': 'application/json'}
-    url = 'http://127.0.0.1:5004/place-order'
+    url = 'http://orders:5004/place-order'
     data = {"cartId": cartId, "totalPrice": totalPrice}
     data = json.dumps(data)
     response = requests.post(url, data=data, headers=headers)
@@ -127,11 +130,11 @@ def orders():
     data = {"userId": session['userId']}
     data = json.dumps(data)
     headers = {'content-type': 'application/json'}
-    url = 'http://127.0.0.1:5003/get-cart-id'
+    url = 'http://cart:5003/get-cart-id'
     response = requests.post(url, data=data, headers=headers)
     if response.status_code is 200:
         data = response.content
-        url = 'http://127.0.0.1:5004/orders'
+        url = 'http://orders:5004/orders'
         response = requests.post(url, data=data, headers=headers)
         if response.status_code is 200:
             data = json.loads(response.content)
@@ -143,7 +146,7 @@ def orders():
 def payment(id):
     orderId = id
     headers = {'content-type': 'application/json'}
-    url = 'http://127.0.0.1:5005/payment'
+    url = 'http://payment:5005/payment'
     data = {"orderId": orderId}
     data = json.dumps(data)
     response = requests.post(url, data=data, headers=headers)
@@ -153,4 +156,4 @@ def payment(id):
 
 
 app.secret_key='secret'
-app.run(port=5000, debug=True)
+app.run(port=5000, debug=True, host='0.0.0.0')

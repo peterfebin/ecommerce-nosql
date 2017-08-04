@@ -2,15 +2,15 @@ from flask import Flask, request, Response
 import json
 from flask_mysqldb import MySQL
 from passlib.hash import sha256_crypt
+import os
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = os.environ['MYSQL_DB_HOST']
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '1234'
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_DB_PASSWORD']
 app.config['MYSQL_DB'] = 'user'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
 mysql = MySQL(app)
 
 
@@ -76,4 +76,4 @@ def login():
     return response
 
 #return render_template('login.html')
-app.run(port=5002, debug=True)
+app.run(port=5002, debug=True, host='0.0.0.0')

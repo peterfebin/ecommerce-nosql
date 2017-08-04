@@ -14,10 +14,10 @@ def launchsvc(svc,host,port):
     resp = checkport(host, int(port))
     if resp != 0:
         print("Service {} not running, starting service at port {} on host {}".format(svc, port, host))
-        os.system('python '+ SERVICE_DIR + svc + '/' + svc + '.py &')
+        os.system('python3 '+ SERVICE_DIR + svc + '/' + svc + '.py &')
     else:
         os.system('kill -9 $(lsof -t -i:' + port + ' -sTCP:LISTEN)')
-        os.system('python '+ SERVICE_DIR + svc + '/' + svc + '.py &')
+        os.system('python3 '+ SERVICE_DIR + svc + '/' + svc + '.py &')
         print("Service {0} is once again starting at host {1} and port {2}".format(svc, host, port))
 
 def walkthrough(section,obj):

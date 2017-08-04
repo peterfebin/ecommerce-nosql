@@ -2,15 +2,15 @@ from flask import Flask, request, Response, jsonify
 from flask_mysqldb import MySQL
 import json
 import requests
+import os
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = os.environ['MYSQL_DB_HOST']
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '1234'
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_DB_PASSWORD']
 app.config['MYSQL_DB'] = 'cart'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-
 mysql = MySQL(app)
 
 @app.route('/add-to-cart', methods=['POST'])
@@ -46,7 +46,7 @@ def cart():
         if result > 0:
             cart = cur.fetchall()
             headers = {'content-type': 'application/json'}
-            url = 'http://127.0.0.1:5001/'
+            url = 'http://catalogue:5001/'
             response = requests.post(url, headers=headers)
             print('RESPONSE: ', response.status_code)
             if response.status_code is 200:
@@ -80,4 +80,4 @@ def getCartId():
     except:
         return 500
 
-app.run(port=5003, debug=True)
+app.run(port=5003, debug=True, host='0.0.0.0')

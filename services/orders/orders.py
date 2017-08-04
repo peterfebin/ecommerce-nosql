@@ -1,12 +1,13 @@
 from flask import Flask, request, Response, jsonify
 from flask_mysqldb import MySQL
 import json
+import os
 
 app = Flask(__name__)
 
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = os.environ['MYSQL_DB_HOST']
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = '1234'
+app.config['MYSQL_PASSWORD'] = os.environ['MYSQL_DB_PASSWORD']
 app.config['MYSQL_DB'] = 'orders'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
@@ -53,4 +54,4 @@ def orders():
     except:
         return 500
 
-app.run(port=5004, debug=True)
+app.run(port=5004, debug=True, host='0.0.0.0')

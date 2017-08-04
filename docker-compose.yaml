@@ -1,0 +1,59 @@
+version: '2'
+
+services:
+ db:
+  image: mariadb
+  environment:
+   MYSQL_ROOT_PASSWORD: test
+  volumes:
+   - ./sqldump/data:/docker-entrypoint-initdb.d
+  ports:
+   - "3306:3306"
+
+ frontend:
+  build: ./services/frontend/
+  ports:
+   - "5000:5000"
+  environment:
+   MYSQL_DB_HOST: db
+   MYSQL_DB_PASSWORD: test
+
+ catalogue:
+  build: ./services/catalogue/
+  ports:
+   - "5001:5001"
+  environment:
+   MYSQL_DB_HOST: db
+   MYSQL_DB_PASSWORD: test
+
+ user:
+  build: ./services/user/
+  ports:
+   - "5002:5002"
+  environment:
+   MYSQL_DB_HOST: db
+   MYSQL_DB_PASSWORD: test
+
+ cart:
+  build: ./services/cart/
+  ports:
+   - "5003:5003"
+  environment:
+   MYSQL_DB_HOST: db
+   MYSQL_DB_PASSWORD: test
+
+ orders:
+  build: ./services/orders/
+  ports:
+   - "5004:5004"
+  environment:
+   MYSQL_DB_HOST: db
+   MYSQL_DB_PASSWORD: test
+
+ payment:
+  build: ./services/payment/
+  ports:
+   - "5005:5005"
+  environment:
+   MYSQL_DB_HOST: db
+   MYSQL_DB_PASSWORD: test
