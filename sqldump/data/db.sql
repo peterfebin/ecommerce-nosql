@@ -37,6 +37,8 @@ USE `cart`;
 CREATE TABLE `cart` (
   `cart_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
+  `total_price` int(11) DEFAULT NULL,
+  `state` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`cart_id`)
 );
 
@@ -57,7 +59,6 @@ CREATE TABLE `orders` (
   `cart_id` int(11) DEFAULT NULL,
   `order_status` varchar(50) DEFAULT NULL,
   `orderDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `total_price` float DEFAULT NULL,
   PRIMARY KEY (`order_id`)
 );
 

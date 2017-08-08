@@ -6,5 +6,5 @@
   <small>Quantity: {{cartItem.quantity}}</small>
   <hr>
   {% endfor %}
-  <a class="btn btn-success" href="/place-order/{{cart[0]['cart_id']}}/{{totalPrice}}" align="centre"> Total = {{totalPrice}}<br>Place Order</a>
+  <a class="btn btn-success" href="/place-order/{{cart[0]['cart_id']}}" align="centre"> Total = {{totalPrice}}<br>Place Order</a>
 {% endblock %}

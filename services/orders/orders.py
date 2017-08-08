@@ -2,6 +2,12 @@ from flask import Flask, request, Response, jsonify
 from flask_mysqldb import MySQL
 import json
 import os
+import logging
+import requests
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__) 
+
 
 app = Flask(__name__)
 
@@ -15,17 +21,33 @@ mysql = MySQL(app)
 
 @app.route('/place-order', methods=['POST'])
 def placeOrder():
+    logger.info("Entered Order service to place an order")
     data = json.loads(request.data)
     try:
+        logger.info("Creating MySQL cursor")
         cur = mysql.connection.cursor()
-        cur.execute("INSERT INTO orders(cart_id, total_price, order_status) VALUES({0}, {1}, '{2}')".format(data['cartId'], data['totalPrice'], "Pending Payment"))
+        logger.info("Executing INSERT query to insert order details")
+        cur.execute("INSERT INTO orders(cart_id, order_status) VALUES({0}, '{1}')".format(data['cartId'], "Pending Payment"))
+        logger.info("Executing SELECT query to obtain order ID")
         result = cur.execute("SELECT * from orders where cart_id = {}".format(data['cartId']))
         result = cur.fetchone()
-        data = {"orderId": result['order_id']}
-        mysql.connection.commit()
-        cur.close()
-        return jsonify(data), 200
+        headers = {'content-type': 'application/json'} 
+        data = json.dumps(data)
+        url = 'http://cart:5003/change-state'
+        logger.info("Making a request to Cart to change the cart state")
+        response = requests.post(url, data=data, headers=headers)
+        logger.debug("Response from Cart: {}".format(response.status_code))
+        if response.status_code is 200:
+           data = {"orderId": result['order_id']}
+           mysql.connection.commit()
+           cur.close()
+           logger.info("Leaving Order successfully")
+           return jsonify(data), 200
+        else:
+           logger.info("Execution Failed on Cart. Leaving Order.")
+           return 500
     except:
+        logger.info("Execution failed. Leaving order")
         response = Response(status=500)
     return response
 
@@ -45,12 +67,21 @@ def updateOrderStatus():
 
 @app.route('/orders', methods=['POST'])
 def orders():
+    logger.info("Entering Orders service to fetch order details")
     data = json.loads(request.data)
+    logger.debug("Data received: {}".format(data))
     try:
+        logger.info("Creating a MySQL cursor")
         cur = mysql.connection.cursor()
-        cur.execute("SELECT * from orders where cart_id = {}".format(data['cartId']))
-        result = cur.fetchall()
-        return jsonify(result), 200
+        orders = []
+        for item in data['cartIds']:
+            logger.debug("Item: {}".format(item))
+            logger.info("Executing SELECT query for each cart ID")
+            cur.execute("SELECT * from orders where cart_id = {}".format(item['cart_id']))
+            result = cur.fetchone()
+            orders.append(result.copy())
+        logger.debug("Order details: {}".format(orders))            
+        return jsonify(orders), 200
     except:
         return 500
 
