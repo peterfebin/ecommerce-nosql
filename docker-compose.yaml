@@ -1,63 +1,95 @@
 version: '2'
 
 services:
- db:
-  image: mariadb
-  environment:
-   MYSQL_ROOT_PASSWORD: test
-  volumes:
-   - db_data:/var/lib/mysql
-   - ./sqldump/data:/docker-entrypoint-initdb.d
-  ports:
-   - "3306:3306"
 
  frontend:
   build: ./services/frontend/
   ports:
    - "5000:5000"
+
+ catalogueDb:
+  image: mariadb
   environment:
-   MYSQL_DB_HOST: db
-   MYSQL_DB_PASSWORD: test
+   MYSQL_ROOT_PASSWORD: test
+  volumes:
+   - catalogueDb_data:/var/lib/mysql
+   - ./sqldump/catalogueDb:/docker-entrypoint-initdb.d
 
  catalogue:
   build: ./services/catalogue/
   ports:
    - "5001:5001"
   environment:
-   MYSQL_DB_HOST: db
+   MYSQL_DB_HOST: catalogueDb
    MYSQL_DB_PASSWORD: test
+
+ userDb:
+  image: mariadb
+  environment:
+   MYSQL_ROOT_PASSWORD: test
+  volumes:
+   - userDb_data:/var/lib/mysql
+   - ./sqldump/userDb:/docker-entrypoint-initdb.d
 
  user:
   build: ./services/user/
   ports:
    - "5002:5002"
   environment:
-   MYSQL_DB_HOST: db
+   MYSQL_DB_HOST: userDb
    MYSQL_DB_PASSWORD: test
 
+ cartDb:
+  image: mariadb
+  environment:
+   MYSQL_ROOT_PASSWORD: test
+  volumes:
+   - cartDb_data:/var/lib/mysql
+   - ./sqldump/cartDb:/docker-entrypoint-initdb.d
+ 
  cart:
   build: ./services/cart/
   ports:
    - "5003:5003"
   environment:
-   MYSQL_DB_HOST: db
+   MYSQL_DB_HOST: cartDb
    MYSQL_DB_PASSWORD: test
 
+ ordersDb:
+  image: mariadb
+  environment:
+   MYSQL_ROOT_PASSWORD: test
+  volumes:
+   - ordersDb_data:/var/lib/mysql
+   - ./sqldump/ordersDb:/docker-entrypoint-initdb.d
+ 
  orders:
   build: ./services/orders/
   ports:
    - "5004:5004"
   environment:
-   MYSQL_DB_HOST: db
+   MYSQL_DB_HOST: ordersDb
    MYSQL_DB_PASSWORD: test
 
+ paymentDb:
+  image: mariadb
+  environment:
+   MYSQL_ROOT_PASSWORD: test
+  volumes:
+   - paymentDb_data:/var/lib/mysql
+   - ./sqldump/paymentDb:/docker-entrypoint-initdb.d
+ 
  payment:
   build: ./services/payment/
   ports:
    - "5005:5005"
   environment:
-   MYSQL_DB_HOST: db
+   MYSQL_DB_HOST: paymentDb
    MYSQL_DB_PASSWORD: test
 
 volumes:
- db_data:
+ catalogueDb_data:
+ userDb_data:
+ cartDb_data:
+ ordersDb_data:
+ paymentDb_data:
