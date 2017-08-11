@@ -21,6 +21,7 @@ mysql = MySQL(app)
 def addToCart():
     logger.info("Entered Cart service to add a product to cart")
     data = json.loads(request.data)
+    logger.debug("Data received = {}".format(data))
     try:
         logger.info("Creating a MySQL cursor")
         cur = mysql.connection.cursor()

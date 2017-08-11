@@ -2,18 +2,18 @@ version: '2'
 
 services:
 
+ db:
+  image: mongo
+  volumes:
+   - /data/mongodb:/data/db
+  
  frontend:
   build: ./services/frontend/
   ports:
    - "5000:5000"
 
- catalogueDb:
-  image: mariadb
-  environment:
-   MYSQL_ROOT_PASSWORD: test
-  volumes:
-   - catalogueDb_data:/var/lib/mysql
-   - ./sqldump/catalogueDb:/docker-entrypoint-initdb.d
+ cataloguedb:
+  image: mongo
 
  catalogue:
   build: ./services/catalogue/
@@ -22,6 +22,9 @@ services:
   environment:
    MYSQL_DB_HOST: catalogueDb
    MYSQL_DB_PASSWORD: test
+  links:
+   - cataloguedb
+   - db
 
  userDb:
   image: mariadb
@@ -35,6 +38,8 @@ services:
   build: ./services/user/
   ports:
    - "5002:5002"
+  links:
+   - db
   environment:
    MYSQL_DB_HOST: userDb
    MYSQL_DB_PASSWORD: test
@@ -88,7 +93,6 @@ services:
    MYSQL_DB_PASSWORD: test
 
 volumes:
- catalogueDb_data:
  userDb_data:
  cartDb_data:
  ordersDb_data:

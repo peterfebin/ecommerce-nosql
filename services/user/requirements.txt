@@ -3,4 +3,4 @@ configobj
 passlib
 Flask-WTF
 requests
-flask-mysqldb
+pymongo
