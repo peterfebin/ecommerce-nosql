@@ -77,7 +77,7 @@ def orders():
         for item in data['cartIds']:
             logger.debug("Item: {}".format(item))
             logger.info("Executing SELECT query for each cart ID")
-            cur.execute("SELECT * from orders where cart_id = {}".format(item['cart_id']))
+            cur.execute("SELECT * from orders where cart_id = {}".format(item))
             result = cur.fetchone()
             orders.append(result.copy())
         logger.debug("Order details: {}".format(orders))            

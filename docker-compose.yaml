@@ -44,13 +44,8 @@ services:
    MYSQL_DB_HOST: userDb
    MYSQL_DB_PASSWORD: test
 
- cartDb:
-  image: mariadb
-  environment:
-   MYSQL_ROOT_PASSWORD: test
-  volumes:
-   - cartDb_data:/var/lib/mysql
-   - ./sqldump/cartDb:/docker-entrypoint-initdb.d
+ cartdb:
+  image: mongo
  
  cart:
   build: ./services/cart/
