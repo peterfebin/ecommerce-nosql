@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-client = MongoClient('db', 27017)
+client = MongoClient('userdb', 27017)
 db = client.userDb
 
 @app.route('/register', methods=['POST'])

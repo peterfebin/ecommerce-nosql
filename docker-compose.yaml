@@ -2,11 +2,6 @@ version: '2'
 
 services:
 
- db:
-  image: mongo
-  volumes:
-   - /data/mongodb:/data/db
-  
  frontend:
   build: ./services/frontend/
   ports:
@@ -24,22 +19,18 @@ services:
    MYSQL_DB_PASSWORD: test
   links:
    - cataloguedb
-   - db
 
- userDb:
-  image: mariadb
-  environment:
-   MYSQL_ROOT_PASSWORD: test
+ userdb:
+  image: mongo
   volumes:
-   - userDb_data:/var/lib/mysql
-   - ./sqldump/userDb:/docker-entrypoint-initdb.d
+   - /data/mongodb:/data/db
 
  user:
   build: ./services/user/
   ports:
    - "5002:5002"
   links:
-   - db
+   - userdb
   environment:
    MYSQL_DB_HOST: userDb
    MYSQL_DB_PASSWORD: test
@@ -55,13 +46,8 @@ services:
    MYSQL_DB_HOST: cartDb
    MYSQL_DB_PASSWORD: test
 
- ordersDb:
-  image: mariadb
-  environment:
-   MYSQL_ROOT_PASSWORD: test
-  volumes:
-   - ordersDb_data:/var/lib/mysql
-   - ./sqldump/ordersDb:/docker-entrypoint-initdb.d
+ ordersdb:
+  image: mongo
  
  orders:
   build: ./services/orders/
@@ -71,13 +57,8 @@ services:
    MYSQL_DB_HOST: ordersDb
    MYSQL_DB_PASSWORD: test
 
- paymentDb:
-  image: mariadb
-  environment:
-   MYSQL_ROOT_PASSWORD: test
-  volumes:
-   - paymentDb_data:/var/lib/mysql
-   - ./sqldump/paymentDb:/docker-entrypoint-initdb.d
+ paymentdb:
+  image: mongo
  
  payment:
   build: ./services/payment/
