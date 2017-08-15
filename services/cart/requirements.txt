@@ -4,3 +4,4 @@ passlib
 Flask-WTF
 requests
 pymongo
+pyjwt

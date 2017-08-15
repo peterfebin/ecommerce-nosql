@@ -9,11 +9,13 @@ import requests
 from functools import wraps
 import os
 import logging
+import jwt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 
 # Check if user logged in
 def is_logged_in(f):
@@ -29,7 +31,10 @@ def is_logged_in(f):
 @app.route('/')
 def index():
     logger.info('Entered index method')
-    headers = {'content-type': 'application/json'}
+    logger.info("Generating token")
+    token = jwt.encode({}, app.config['SECRET_KEY'])
+    token = token.decode('UTF-8')
+    headers = {'access-token': token, 'content-type': 'application/json'}
     url = 'http://catalogue:5001/'
     response = requests.post(url, headers=headers)
     logger.debug('RESPONSE {}'.format( response.status_code))
@@ -50,7 +55,10 @@ def register():
         data = {"email": form.email.data, "username": form.username.data, "password": sha256_crypt.encrypt(str(form.password.data))}
         data = json.dumps(data)
         logger.info("Received form data")
-        headers = {'content-type': 'application/json'}
+        logger.info("Generating token")
+        token = jwt.encode({}, app.config['SECRET_KEY'])
+        token = token.decode('UTF-8')
+        headers = {'access-token': token, 'content-type': 'application/json'}        
         url = 'http://user:5002/register'
         response = requests.post(url, data=data, headers=headers)
         logger.info("Response from Register: {}".format(response.status_code))
@@ -69,7 +77,10 @@ def login():
         data = {"username": username, "password_candidate": password_candidate}
         data = json.dumps(data)
         logger.info("Received form data")
-        headers = {'content-type': 'application/json'}
+        logger.info("Generating token")
+        token = jwt.encode({}, app.config['SECRET_KEY'])
+        token = token.decode('UTF-8')
+        headers = {'access-token': token, 'content-type': 'application/json'}
         url = 'http://user:5002/login'
         response = requests.post(url, data=data, headers=headers)
         logger.debug("Reponse from Login: {}".format(response.status_code))
@@ -100,7 +111,10 @@ def addToCart(id):
     data = {"productId": productId, "userId": session['userId']}
     data = json.dumps(data)
     logger.info("Received product ID")
-    headers = {'content-type': 'application/json'}
+    logger.info("Generating token")
+    token = jwt.encode({}, app.config['SECRET_KEY'])
+    token = token.decode('UTF-8')
+    headers = {'access-token': token, 'content-type': 'application/json'}
     url = 'http://cart:5003/add-to-cart'
     response = requests.post(url, data=data, headers=headers)
     logger.debug("Response from Cart: {}".format(response.status_code))
@@ -113,7 +127,10 @@ def addToCart(id):
 @is_logged_in
 def cart():
     logger.info("Entered cart method")
-    headers = {'content-type': 'application/json'}
+    logger.info("Generating token")
+    token = jwt.encode({}, app.config['SECRET_KEY'])
+    token = token.decode('UTF-8')
+    headers = {'access-token': token, 'content-type': 'application/json'}
     url = 'http://cart:5003/cart'
     data = {"userId": session['userId']}
     data = json.dumps(data)
@@ -133,7 +150,10 @@ def cart():
 @is_logged_in
 def placeOrder(cartId):
     logger.info('Entered place order method')
-    headers = {'content-type': 'application/json'}
+    logger.info("Generating token")
+    token = jwt.encode({}, app.config['SECRET_KEY'])
+    token = token.decode('UTF-8')
+    headers = {'access-token': token, 'content-type': 'application/json'} 
     url = 'http://orders:5004/place-order'
     data = {"cartId": cartId}
     data = json.dumps(data)
@@ -153,7 +173,10 @@ def orders():
     logger.info("Entered orders method")
     data = {"userId": session['userId']}
     data = json.dumps(data)
-    headers = {'content-type': 'application/json'}
+    logger.info("Generating token")
+    token = jwt.encode({}, app.config['SECRET_KEY'])
+    token = token.decode('UTF-8')
+    headers = {'access-token': token, 'content-type': 'application/json'}
     url = 'http://cart:5003/get-cart-id'
     response = requests.post(url, data=data, headers=headers)
     logger.debug("Response from Cart: {}".format(response.status_code))
@@ -178,7 +201,10 @@ def orders():
 def payment(id):
     logger.info("Entered payment method")
     orderId = id
-    headers = {'content-type': 'application/json'}
+    logger.info("Generating token")
+    token = jwt.encode({}, app.config['SECRET_KEY'])
+    token = token.decode('UTF-8')
+    headers = {'access-token': token, 'content-type': 'application/json'}
     url = 'http://payment:5005/payment'
     data = {"orderId": orderId}
     data = json.dumps(data)
@@ -190,5 +216,5 @@ def payment(id):
     return 'No Payments'
 
 
-app.secret_key='secret'
+#app.secret_key='secret'
 app.run(port=5000, debug=True, host='0.0.0.0')

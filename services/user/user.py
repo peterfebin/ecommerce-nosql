@@ -6,18 +6,26 @@ import logging
 from pymongo import MongoClient
 import bson.json_util
 import random
+import jwt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 
 client = MongoClient('userdb', 27017)
 db = client.userDb
 
 @app.route('/register', methods=['POST'])
 def register():
-   logger.info("Entered User service to register")
+  logger.info("Entered User service to register")
+  try:
+   logger.info("Authenticating token")
+   token = request.headers['access-token']
+   logger.debug("Received token: {}".format(token))
+   jwt.decode(token, app.config['SECRET_KEY'])
+   logger.info("Token authentication successful")
    data = json.loads(request.data)
    username = data['username']
    password = data['password']
@@ -36,10 +44,19 @@ def register():
          continue
       break
    return response
+  except:
+     logger.info("Token authentication failed. Leaving user service")
+     response = Response(status=500)
+     return response
 
 @app.route('/login', methods=['POST'])
 def login():
-    logger.info("Entered User service to login")
+   logger.info("Entered User service to login")
+   try:
+    logger.info("Authenticating token")
+    token = request.headers['access-token']
+    jwt.decode(token, app.config['SECRET_KEY'])
+    logger.info("Token authentication successful")
     data = json.loads(request.data)
     username = data['username']
     password_candidate = data['password_candidate']
@@ -67,5 +84,9 @@ def login():
         logger.info("Execution failed. Leaving user service")
         response = Response(status=500)
     return response
+   except:
+      logger.info("Token authentication failed")
+      response = Response(status=500)
+      return response
 
 app.run(port=5002, debug=True, host='0.0.0.0')

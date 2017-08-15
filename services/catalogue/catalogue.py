@@ -3,18 +3,25 @@ import os
 import logging
 import json
 from pymongo import MongoClient
+import jwt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 
 client = MongoClient('cataloguedb', 27017)
 db = client.productDb
 
 @app.route('/', methods=['POST'])
 def catalogue():
-    logger.info('Entered Catalogue service to list the products')
+   logger.info('Entered Catalogue service to list the products')
+   try:
+    logger.info("Authenticating token")
+    token = request.headers['access-token']
+    jwt.decode(token, app.config['SECRET_KEY'])
+    logger.info("Token authentication successful")
     try:
        db.product.drop()
        product = {'_id': 1, 'name': 'nike', 'category': 'shoe', 'price': 11, 'location': '/static/shoe.jpg'}
@@ -37,6 +44,11 @@ def catalogue():
         logger.warning("Failed to execute query. Leaving Catalogue service")
         response = Response(status=500)
         return response
+
+   except:
+      logger.warning("Token authentication failed. Leavng Catalogue")    
+      response = Response(status=500)
+      return response
 
 @app.route('/price', methods=['POST'])
 def price():

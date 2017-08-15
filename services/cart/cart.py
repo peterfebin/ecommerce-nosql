@@ -5,18 +5,25 @@ import os
 import logging
 import random
 from pymongo import MongoClient
+import jwt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 
 client = MongoClient('cartdb', 27017)
 db = client.cartDb
 
 @app.route('/add-to-cart', methods=['POST'])
 def addToCart():
-   logger.info("Entered Cart service to add a product to cart")
+  logger.info("Entered Cart service to add a product to cart")
+  try:
+   logger.info("Authenticating token")
+   token = request.headers['access-token']
+   jwt.decode(token, app.config['SECRET_KEY'])
+   logger.info("Token authentication successful")
    data = json.loads(request.data)
    try:
       logger.info("Checking if cart exisits")
@@ -58,15 +65,25 @@ def addToCart():
          return response
       logger.info("Leaving Cart successfully")
       response = Response(status=200)
+      return response
    except:
       logger.debug("Execution failed. Leaving Cart service")
       response = Response(status=500)
-   return response
+      return response
+  except:
+     logger.info("Token authentication failed")
+     response = Response(status=500)
+     return response
 
 @app.route('/cart', methods=['POST'])
 # ToDo: List products and remove duplication of cart items, handle case for result zero
 def cart():
-    logger.info("Entered Cart service to display cart items")
+   logger.info("Entered Cart service to display cart items")
+   try:
+    logger.info("Authenticating token")
+    token = request.headers['access-token']
+    jwt.decode(token, app.config['SECRET_KEY'])
+    logger.info("Token authentication successful")
     data = json.loads(request.data)
     try:
        logger.info("Loading cart")
@@ -83,6 +100,10 @@ def cart():
         logger.info("Execution failed. Leaving cart service")
         response = Response(status=500)
         return response
+   except:
+      logger.info("Token authentication failed")
+      response = Response(status=500)
+      return response
 
 @app.route('/get-cart-id', methods=['POST'])
 def getCartId():

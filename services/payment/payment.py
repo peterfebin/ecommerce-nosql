@@ -5,18 +5,25 @@ import os
 import logging
 import random
 from pymongo import MongoClient
+import jwt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 
 client = MongoClient('paymentdb', 27017)
 db = client.paymentDb
 
 @app.route('/payment', methods=['POST'])
 def payment():
-    logger.info("Entered Payment service to make payment")
+   logger.info("Entered Payment service to make payment")
+   try:
+    logger.info("Authenticating token")
+    token = request.headers['access-token']
+    jwt.decode(token, app.config['SECRET_KEY'])
+    logger.info("Token authentication successful")
     data = json.loads(request.data)
     try:
        while True:
@@ -48,7 +55,10 @@ def payment():
         response = Response(status=500)
         return response
 
-    return "SUCCESS"
+   except:
+      logger.info("Token authentication failed")
+      response = Response(status=500)
+      return response
 
 
 app.run(port=5005, debug=True, host='0.0.0.0')

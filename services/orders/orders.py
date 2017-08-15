@@ -5,18 +5,25 @@ import logging
 import requests
 import random
 from pymongo import MongoClient
+import jwt
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret'
 
 client = MongoClient('ordersdb', 27017)
 db = client.ordersDb
 
 @app.route('/place-order', methods=['POST'])
 def placeOrder():
-    logger.info("Entered Order service to place an order")
+   logger.info("Entered Order service to place an order")
+   try:
+    logger.info("Authenticating token")
+    token = request.headers['access-token']
+    jwt.decode(token, app.config['SECRET_KEY'])
+    logger.info("Token authentication successful")
     data = json.loads(request.data)
     try:
      while True:
@@ -45,7 +52,12 @@ def placeOrder():
     except:
        logger.info("Execution failed. Leaving order")
        response = Response(status=500)
-    return response
+       return response
+   except:
+      logger.info("Token authentication failed")
+      response = Response(status=500)
+      return response
+
 
 
 @app.route('/update-order-status', methods=['POST'])
@@ -64,7 +76,12 @@ def updateOrderStatus():
 
 @app.route('/orders', methods=['POST'])
 def orders():
-    logger.info("Entering Orders service to fetch order details")
+   logger.info("Entering Orders service to fetch order details")
+   try:
+    logger.info("Authenticating token")
+    token = request.headers['access-token']
+    jwt.decode(token, app.config['SECRET_KEY'])
+    logger.info("Token authentication successful")
     data = json.loads(request.data)
     logger.debug("Data received: {}".format(data))
     orders = []
@@ -77,5 +94,9 @@ def orders():
        return jsonify(orders), 200
     except:
        return 500
+   except:
+      logger.info("Token authentication failed")
+      response = Response(status=500)
+      return response
 
 app.run(port=5004, debug=True, host='0.0.0.0')
